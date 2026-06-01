@@ -184,6 +184,12 @@
   .p-claim{font-size:clamp(16px,2vw,20px);color:var(--gray);max-width:680px;margin-top:8px}
   .p-claim b{color:var(--cream)}
 
+  .prep{margin-top:34px;border:1px solid var(--line);border-radius:6px;padding:22px 24px;background:linear-gradient(160deg,var(--surface-2),var(--surface));display:flex;gap:18px;align-items:flex-start}
+  .prep .prep-ico{font-family:var(--font-mono);color:var(--amber);font-size:13px;letter-spacing:.1em;padding-top:2px;white-space:nowrap}
+  .prep .prep-body .prep-k{font-family:var(--font-mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+  .prep .prep-body p{color:var(--gray);margin:0;font-size:15px}
+  .prep .prep-body p b{color:var(--cream)}
+  @media(max-width:560px){.prep{flex-direction:column;gap:10px}}
   .block{margin-top:56px}
   .block-k{font-family:var(--font-mono);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:20px;display:flex;align-items:center;gap:12px}
   .block-k .num{color:var(--amber)}
@@ -307,6 +313,14 @@
         <p class="p-claim">El primer café diseñado para aumentar tu <b>fuerza, resistencia y foco</b> al entrenar. Hecho por alguien que ama la idea de un pre-entreno pero siempre se decepcionó al tomarlos.</p>
       </div>
 
+      <div class="prep">
+        <div class="prep-ico">☕</div>
+        <div class="prep-body">
+          <div class="prep-k">Cómo se prepara</div>
+          <p>Igual que cualquier café —filtro, espresso, prensa francesa, volturno: lo que uses—. La única diferencia es la dosis: <b>una porción son 3 cucharas medidoras</b> (la medida va incluida en el pedido).</p>
+        </div>
+      </div>
+
       <div class="block">
         <div class="block-k"><span class="num">→</span> Qué es y qué tiene adentro</div>
         <p>Es el SHOCK de siempre, pero formulado para ayudarte a entrenar mejor. Empecemos por lo que ya sabíamos: <b>la cafeína es el ingrediente pre-entreno con más respaldo del mundo</b>. No es solo energía. Antagoniza la adenosina y, a nivel muscular, aumenta la fuerza, baja la fatiga percibida y estira el aguante. Décadas de estudios.</p>
@@ -412,6 +426,14 @@
         <div class="p-tag">02 · La cabeza</div>
         <h2 class="p-title">SHOCK<br>CONCENTRACIÓN</h2>
         <p class="p-claim">El único café diseñado para aumentar tu <b>concentración y tu fuerza de voluntad</b>. Creado por químicos, no por hipsters.</p>
+      </div>
+
+      <div class="prep">
+        <div class="prep-ico">☕</div>
+        <div class="prep-body">
+          <div class="prep-k">Cómo se prepara</div>
+          <p>Igual que el SHOCK común. Misma medida, mismo método: lo preparás como siempre.</p>
+        </div>
       </div>
 
       <div class="block">
@@ -549,14 +571,16 @@
     return {geo,speeds,count,pts};
   }
 
-  const fineSprite=makeSprite(0.9,'rgba(214,168,116,0.45)');
+  const fineSprite=makeSprite(0.95,'rgba(219,176,124,0.5)');
   const bokehSprite=makeSprite(0.45,'rgba(201,128,59,0.30)');
 
-  // tiny abundant dust motes (the backlit dust feel)
-  const dust=makeLayer(1400, 26, 0.06, 0.65, fineSprite, 0.0025, 0.009);
+  // very fine, abundant dust (polvillo a contraluz)
+  const dust=makeLayer(3800, 28, 0.045, 0.95, fineSprite, 0.0022, 0.008);
+  // a second, even finer layer for density
+  const dust2=makeLayer(2600, 22, 0.03, 0.8, fineSprite, 0.0016, 0.006);
   // a handful of soft, out-of-focus golden orbs for depth
-  const bokeh=makeLayer(34, 8, 0.85, 0.20, bokehSprite, 0.0015, 0.005);
-  const layers=[dust,bokeh];
+  const bokeh=makeLayer(40, 8, 0.8, 0.18, bokehSprite, 0.0014, 0.005);
+  const layers=[dust,dust2,bokeh];
 
   let mx=0,my=0,tx=0,ty=0;
   window.addEventListener('mousemove',e=>{
@@ -579,10 +603,12 @@
       L.geo.attributes.position.needsUpdate=true;
     });
     tx+=(mx-tx)*0.04; ty+=(my-ty)*0.04;
-    dust.pts.rotation.y=tx*0.4;  dust.pts.rotation.x=ty*0.25;
-    bokeh.pts.rotation.y=tx*0.6; bokeh.pts.rotation.x=ty*0.4;
+    dust.pts.rotation.y=tx*0.4;   dust.pts.rotation.x=ty*0.25;
+    dust2.pts.rotation.y=tx*0.5;  dust2.pts.rotation.x=ty*0.3;
+    bokeh.pts.rotation.y=tx*0.6;  bokeh.pts.rotation.x=ty*0.4;
     camera.position.y=-scrollY*0.0015;
     dust.pts.rotation.z+=0.0003;
+    dust2.pts.rotation.z-=0.0002;
     renderer.render(scene,camera);
   }
   animate();
