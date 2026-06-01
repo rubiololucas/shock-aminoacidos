@@ -265,14 +265,14 @@
 <!-- ===================== PRESENTACIÓN ===================== -->
 <section class="hero">
   <div class="wrap">
-    <div class="eyebrow">El café creado para hacer</div>
-    <h1 class="hero-title">EL SHOCK<br><span class="ln2">AHORA HACE</span><br>DOS COSAS MÁS</h1>
+    <div class="eyebrow">Creemos en hacer · por eso seguimos haciendo</div>
+    <h1 class="hero-title">A SHOCK<br><span class="ln2">LE SUMAMOS</span><br>AMINOÁCIDOS</h1>
     <div class="hero-copy">
-      <p class="lead">SHOCK siempre fue un café para HACER: 300&nbsp;mg de cafeína, energía limpia, sin el bajón de las 2 de la tarde. Eso no cambió.</p>
-      <p>Lo que cambió es que ahora hay dos versiones que le suman algo más. No es polvo mágico ni humo: son aminoácidos y compuestos que tu cuerpo y tu cerebro ya usan todos los días, puestos en la dosis que dicen los estudios.</p>
-      <p>La cafeína enciende. Estos la apuntan.</p>
-      <p class="impact">Una apunta al cuerpo.<br>La otra, a la cabeza.</p>
-      <p>Mismo café de siempre. Mismo tostado. Ahora con la química bien puesta para lo que vengas a hacer hoy.</p>
+      <p class="lead">Creemos en hacer. Por eso no paramos: trabajamos todos los días en una versión mejor del café que ya tomás. Así llegamos a esto.</p>
+      <p>SHOCK ya es potencia medida: 300&nbsp;mg de cafeína cuantificados en laboratorio, energía estable de 6 a 8 horas, sin crash. La cafeína antagoniza los receptores de adenosina y dispara alerta, fuerza y velocidad de procesamiento —pero tiene un techo bioquímico que no se rompe con más cafeína.</p>
+      <p>A esa base le sumamos aminoácidos y compuestos que tu cuerpo y tu cerebro ya sintetizan y consumen todos los días, en las dosis que respalda la literatura científica. No reemplazan a la cafeína: <b>amplían su techo</b>. Potencian lo que ya hace y cubren lo que no toca.</p>
+      <p class="impact">No es un café nuevo.<br>Es SHOCK rindiendo más.</p>
+      <p>Y hay una variedad según tu objetivo: una formulada para el cuerpo, otra para la cabeza.</p>
     </div>
 
     <div class="choose">
@@ -395,7 +395,7 @@
             <div class="s-cite">Consenso de fisiología del ejercicio e hidratación — <a href="https://pubmed.ncbi.nlm.nih.gov/?term=electrolytes+exercise+hydration+neuromuscular+cramps" target="_blank" rel="noopener">PubMed</a></div>
           </div>
         </div>
-        <p class="disclaimer">Nota honesta: la dosis de betaína de los estudios suele ser 2,5 g; SHOCK usa 1,5 g combinada con el resto de la fórmula. Si querés calcular tu cafeína según tu peso, está en calculadora.theshockcoffee.com. Embarazo, problemas de corazón, presión alta o medicación: hablalo con tu médico. No apto para menores de 18.</p>
+        <p class="disclaimer">Si querés calcular tu cafeína según tu peso, está en calculadora.theshockcoffee.com. Embarazo, problemas de corazón, presión alta o medicación: hablalo con tu médico. No apto para menores de 18.</p>
       </div>
 
       <div class="switch-note">
@@ -515,38 +515,48 @@
   const camera=new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeight,0.1,100);
   camera.position.z=14;
 
-  const COUNT=520;
-  const positions=new Float32Array(COUNT*3);
-  const speeds=new Float32Array(COUNT);
-  const sizes=new Float32Array(COUNT);
-  for(let i=0;i<COUNT;i++){
-    positions[i*3]  =(Math.random()-0.5)*40;
-    positions[i*3+1]=(Math.random()-0.5)*30;
-    positions[i*3+2]=(Math.random()-0.5)*22;
-    speeds[i]=0.004+Math.random()*0.012;
-    sizes[i]=0.6+Math.random()*1.7;
+  // soft round sprite generator (warm, backlit)
+  function makeSprite(coreAlpha, edge){
+    const c=document.createElement('canvas');c.width=c.height=64;
+    const ctx=c.getContext('2d');
+    const g=ctx.createRadialGradient(32,32,0,32,32,32);
+    g.addColorStop(0,'rgba(246,241,232,'+coreAlpha+')');
+    g.addColorStop(0.4,edge);
+    g.addColorStop(1,'rgba(201,128,59,0)');
+    ctx.fillStyle=g;ctx.fillRect(0,0,64,64);
+    return new THREE.CanvasTexture(c);
   }
-  const geo=new THREE.BufferGeometry();
-  geo.setAttribute('position',new THREE.BufferAttribute(positions,3));
-  geo.setAttribute('aSize',new THREE.BufferAttribute(sizes,1));
 
-  // soft round sprite
-  const c=document.createElement('canvas');c.width=c.height=64;
-  const ctx=c.getContext('2d');
-  const g=ctx.createRadialGradient(32,32,0,32,32,32);
-  g.addColorStop(0,'rgba(242,239,233,0.95)');
-  g.addColorStop(0.35,'rgba(201,128,59,0.45)');
-  g.addColorStop(1,'rgba(201,128,59,0)');
-  ctx.fillStyle=g;ctx.fillRect(0,0,64,64);
-  const sprite=new THREE.CanvasTexture(c);
+  // builds one floating-particle layer
+  function makeLayer(count, spreadZ, sizeBase, opacity, sprite, speedMin, speedRange){
+    const positions=new Float32Array(count*3);
+    const speeds=new Float32Array(count);
+    for(let i=0;i<count;i++){
+      positions[i*3]  =(Math.random()-0.5)*48;
+      positions[i*3+1]=(Math.random()-0.5)*34;
+      positions[i*3+2]=(Math.random()-0.5)*spreadZ;
+      speeds[i]=speedMin+Math.random()*speedRange;
+    }
+    const geo=new THREE.BufferGeometry();
+    geo.setAttribute('position',new THREE.BufferAttribute(positions,3));
+    const mat=new THREE.PointsMaterial({
+      size:sizeBase, map:sprite, transparent:true,
+      depthWrite:false, blending:THREE.AdditiveBlending,
+      opacity:opacity, sizeAttenuation:true
+    });
+    const pts=new THREE.Points(geo,mat);
+    scene.add(pts);
+    return {geo,speeds,count,pts};
+  }
 
-  const mat=new THREE.PointsMaterial({
-    size:0.5, map:sprite, transparent:true,
-    depthWrite:false, blending:THREE.AdditiveBlending,
-    opacity:0.85, sizeAttenuation:true
-  });
-  const points=new THREE.Points(geo,mat);
-  scene.add(points);
+  const fineSprite=makeSprite(0.9,'rgba(214,168,116,0.45)');
+  const bokehSprite=makeSprite(0.45,'rgba(201,128,59,0.30)');
+
+  // tiny abundant dust motes (the backlit dust feel)
+  const dust=makeLayer(1400, 26, 0.06, 0.65, fineSprite, 0.0025, 0.009);
+  // a handful of soft, out-of-focus golden orbs for depth
+  const bokeh=makeLayer(34, 8, 0.85, 0.20, bokehSprite, 0.0015, 0.005);
+  const layers=[dust,bokeh];
 
   let mx=0,my=0,tx=0,ty=0;
   window.addEventListener('mousemove',e=>{
@@ -558,18 +568,21 @@
 
   function animate(){
     requestAnimationFrame(animate);
-    const pos=geo.attributes.position.array;
-    for(let i=0;i<COUNT;i++){
-      pos[i*3+1]+=speeds[i];           // float up
-      pos[i*3]+=Math.sin(Date.now()*0.0002+i)*0.002; // drift
-      if(pos[i*3+1]>16){pos[i*3+1]=-16;}
-    }
-    geo.attributes.position.needsUpdate=true;
+    const t=Date.now();
+    layers.forEach(function(L){
+      const pos=L.geo.attributes.position.array;
+      for(let i=0;i<L.count;i++){
+        pos[i*3+1]+=L.speeds[i];                    // float up, slow
+        pos[i*3]+=Math.sin(t*0.0002+i)*0.0014;      // gentle lateral drift
+        if(pos[i*3+1]>17){pos[i*3+1]=-17;}
+      }
+      L.geo.attributes.position.needsUpdate=true;
+    });
     tx+=(mx-tx)*0.04; ty+=(my-ty)*0.04;
-    points.rotation.y=tx*0.5;
-    points.rotation.x=ty*0.3;
+    dust.pts.rotation.y=tx*0.4;  dust.pts.rotation.x=ty*0.25;
+    bokeh.pts.rotation.y=tx*0.6; bokeh.pts.rotation.x=ty*0.4;
     camera.position.y=-scrollY*0.0015;
-    points.rotation.z+=0.0004;
+    dust.pts.rotation.z+=0.0003;
     renderer.render(scene,camera);
   }
   animate();
