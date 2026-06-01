@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SHOCK COFFEE | Pre Entreno & Concentración</title>
+<meta name="description" content="Las nuevas variedades de SHOCK COFFEE: aminoácidos sumados al café para entrenar y trabajar mejor. Respaldado por la ciencia." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Quantico:wght@400;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#0A0807;
+    --bg-2:#050403;
+    --surface:#14110E;
+    --surface-2:#1C1813;
+    --line:#2C2A26;
+    --line-soft:rgba(242,239,233,0.08);
+    --cream:#F2EFE9;
+    --gray:#B8B3A8;
+    --muted:#6E6960;
+    --amber:#C9803B;
+    --amber-soft:rgba(201,128,59,0.14);
+    --font-display:'Quantico',sans-serif;
+    --font-body:'Inter',-apple-system,sans-serif;
+    --font-mono:'JetBrains Mono',monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg);
+    color:var(--cream);
+    font-family:var(--font-body);
+    font-size:16px;
+    line-height:1.6;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--cream);color:var(--bg)}
+
+  /* ---------- 3D particle canvas ---------- */
+  #bg-canvas{
+    position:fixed;
+    inset:0;
+    width:100%;
+    height:100%;
+    z-index:0;
+    pointer-events:none;
+  }
+  .vignette{
+    position:fixed;
+    inset:0;
+    z-index:1;
+    pointer-events:none;
+    background:radial-gradient(ellipse at 50% 38%, rgba(10,8,7,0) 0%, rgba(10,8,7,0.45) 62%, rgba(10,8,7,0.9) 100%);
+  }
+  .grain{
+    position:fixed;
+    inset:0;
+    z-index:2;
+    pointer-events:none;
+    opacity:.04;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ---------- nav ---------- */
+  nav{
+    position:fixed;
+    top:0;left:0;right:0;
+    z-index:50;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:18px clamp(20px,5vw,64px);
+    backdrop-filter:blur(10px);
+    background:linear-gradient(to bottom, rgba(10,8,7,0.85), rgba(10,8,7,0));
+  }
+  .brand{
+    font-family:var(--font-display);
+    font-weight:700;
+    letter-spacing:.18em;
+    font-size:15px;
+  }
+  .brand b{color:var(--amber)}
+  .nav-status{
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:.1em;
+    color:var(--muted);
+    text-transform:uppercase;
+    display:flex;align-items:center;gap:8px;
+  }
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px var(--amber);animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+  .wrap{position:relative;z-index:10;max-width:1180px;margin:0 auto;padding:0 clamp(20px,5vw,48px)}
+
+  /* ---------- hero / presentación ---------- */
+  .hero{
+    min-height:100vh;
+    display:flex;flex-direction:column;justify-content:center;
+    padding-top:120px;padding-bottom:80px;
+    position:relative;z-index:10;
+  }
+  .eyebrow{
+    font-family:var(--font-mono);
+    font-size:12px;letter-spacing:.28em;text-transform:uppercase;
+    color:var(--amber);margin-bottom:26px;
+    display:flex;align-items:center;gap:12px;
+  }
+  .eyebrow::before{content:"";width:32px;height:1px;background:var(--amber)}
+  h1.hero-title{
+    font-family:var(--font-display);
+    font-weight:700;
+    text-transform:uppercase;
+    line-height:.95;
+    letter-spacing:-.01em;
+    font-size:clamp(44px,8.5vw,118px);
+    margin-bottom:34px;
+  }
+  h1.hero-title .ln2{color:var(--muted)}
+  .hero-copy{max-width:620px}
+  .hero-copy p{font-size:clamp(16px,2vw,19px);color:var(--gray);margin-bottom:18px}
+  .hero-copy p.lead{color:var(--cream);font-size:clamp(18px,2.3vw,22px)}
+  .hero-copy .impact{
+    font-family:var(--font-display);
+    font-weight:700;text-transform:uppercase;
+    color:var(--cream);font-size:clamp(20px,3vw,30px);
+    letter-spacing:.01em;margin:30px 0 8px;line-height:1.1;
+  }
+  .micro{font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase}
+
+  /* ---------- los dos botones ---------- */
+  .choose{margin-top:54px}
+  .choose-q{
+    font-family:var(--font-mono);font-size:12px;letter-spacing:.22em;
+    text-transform:uppercase;color:var(--muted);margin-bottom:18px;
+  }
+  .btns{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:680px}
+  @media(max-width:560px){.btns{grid-template-columns:1fr}}
+  .cta{
+    position:relative;
+    border:1px solid var(--line);
+    background:linear-gradient(160deg,var(--surface-2),var(--surface));
+    color:var(--cream);
+    padding:26px 26px;
+    text-align:left;
+    cursor:pointer;
+    border-radius:4px;
+    transition:all .35s cubic-bezier(.2,.7,.2,1);
+    overflow:hidden;
+    font-family:inherit;
+  }
+  .cta::after{
+    content:"";position:absolute;inset:0;
+    background:radial-gradient(120% 120% at 0% 0%, var(--amber-soft), transparent 60%);
+    opacity:0;transition:opacity .35s;
+  }
+  .cta:hover{border-color:var(--amber);transform:translateY(-3px)}
+  .cta:hover::after{opacity:1}
+  .cta.active{border-color:var(--cream);background:var(--cream);color:var(--bg)}
+  .cta.active .cta-sub,.cta.active .cta-arrow{color:var(--bg);opacity:.7}
+  .cta-label{font-family:var(--font-display);font-weight:700;text-transform:uppercase;font-size:clamp(17px,2.4vw,22px);letter-spacing:.02em;display:block;margin-bottom:8px;position:relative;z-index:2}
+  .cta-sub{font-family:var(--font-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);position:relative;z-index:2}
+  .cta-arrow{position:absolute;top:22px;right:22px;color:var(--amber);font-family:var(--font-mono);z-index:2;transition:transform .35s}
+  .cta:hover .cta-arrow{transform:translateX(4px)}
+
+  /* ---------- product panel ---------- */
+  #product-stage{
+    position:relative;z-index:10;
+    max-height:0;opacity:0;overflow:hidden;
+    transition:max-height .7s cubic-bezier(.2,.7,.2,1),opacity .6s;
+  }
+  #product-stage.open{max-height:none;opacity:1}
+  .product{display:none;padding:70px 0 40px;animation:fadeUp .7s both}
+  .product.show{display:block}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:translateY(0)}}
+
+  .sec-divider{height:1px;background:var(--line-soft);margin:0}
+
+  .p-head{display:flex;flex-direction:column;gap:14px;margin-bottom:8px}
+  .p-tag{font-family:var(--font-mono);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--amber)}
+  h2.p-title{font-family:var(--font-display);font-weight:700;text-transform:uppercase;font-size:clamp(34px,6vw,72px);line-height:.96;letter-spacing:-.01em}
+  .p-claim{font-size:clamp(16px,2vw,20px);color:var(--gray);max-width:680px;margin-top:8px}
+  .p-claim b{color:var(--cream)}
+
+  .block{margin-top:56px}
+  .block-k{font-family:var(--font-mono);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:20px;display:flex;align-items:center;gap:12px}
+  .block-k .num{color:var(--amber)}
+  .block-k::after{content:"";flex:1;height:1px;background:var(--line-soft)}
+  .block h3{font-family:var(--font-display);font-weight:700;text-transform:uppercase;font-size:clamp(22px,3.2vw,34px);margin-bottom:18px;letter-spacing:.01em}
+  .block p{color:var(--gray);margin-bottom:16px;max-width:760px}
+  .block p b{color:var(--cream)}
+
+  /* formula table */
+  .formula{border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--surface)}
+  .formula-row{display:grid;grid-template-columns:1.4fr .8fr 1fr;gap:8px;padding:16px 22px;border-bottom:1px solid var(--line-soft);align-items:center}
+  .formula-row:last-child{border-bottom:none}
+  .formula-row.head{background:var(--surface-2);font-family:var(--font-mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+  .formula-row .cmp{font-weight:600;color:var(--cream)}
+  .formula-row .dose{font-family:var(--font-mono);color:var(--amber);font-weight:500}
+  .formula-row .chem{font-family:var(--font-mono);font-size:13px;color:var(--muted);text-align:right}
+  @media(max-width:560px){.formula-row{grid-template-columns:1fr auto;gap:4px}.formula-row .chem{display:none}}
+
+  /* ingredient cards */
+  .ing-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  @media(max-width:720px){.ing-grid{grid-template-columns:1fr}}
+  .ing{border:1px solid var(--line);border-radius:6px;padding:24px;background:linear-gradient(160deg,var(--surface-2),var(--surface));transition:border-color .3s,transform .3s}
+  .ing:hover{border-color:var(--amber);transform:translateY(-2px)}
+  .ing .ing-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;gap:10px}
+  .ing .ing-name{font-family:var(--font-display);font-weight:700;text-transform:uppercase;font-size:18px;letter-spacing:.02em}
+  .ing .ing-dose{font-family:var(--font-mono);font-size:13px;color:var(--amber);white-space:nowrap}
+  .ing p{font-size:14.5px;color:var(--gray);margin:0}
+  .ing .role{display:inline-block;margin-top:14px;font-family:var(--font-mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);border-radius:100px;padding:4px 12px}
+
+  .logic{margin-top:28px;border-left:2px solid var(--amber);padding:6px 0 6px 22px;font-family:var(--font-display);text-transform:uppercase;font-size:clamp(16px,2.2vw,22px);line-height:1.4;color:var(--cream);letter-spacing:.01em}
+  .logic span{color:var(--muted)}
+
+  /* feel / faq mini */
+  .faq{border-top:1px solid var(--line-soft)}
+  .faq-item{border-bottom:1px solid var(--line-soft);padding:22px 0}
+  .faq-q{font-family:var(--font-display);font-weight:700;text-transform:uppercase;font-size:16px;letter-spacing:.02em;color:var(--cream);margin-bottom:10px;display:flex;gap:12px;align-items:center}
+  .faq-q .q-mark{color:var(--amber);font-family:var(--font-mono);font-size:13px}
+  .faq-a{color:var(--gray);font-size:15px;max-width:760px}
+
+  /* studies */
+  .studies{display:grid;gap:12px}
+  .study{border:1px solid var(--line);border-radius:6px;padding:20px 22px;background:var(--surface);transition:border-color .3s}
+  .study:hover{border-color:var(--amber)}
+  .study .s-top{display:flex;justify-content:space-between;gap:12px;align-items:baseline;flex-wrap:wrap;margin-bottom:6px}
+  .study .s-comp{font-family:var(--font-display);font-weight:700;text-transform:uppercase;font-size:15px;letter-spacing:.03em}
+  .study .s-dose{font-family:var(--font-mono);font-size:12px;color:var(--amber)}
+  .study .s-finding{color:var(--gray);font-size:14.5px;margin-bottom:10px}
+  .study .s-cite{font-family:var(--font-mono);font-size:11.5px;color:var(--muted);letter-spacing:.02em}
+  .study a{color:var(--gray);text-decoration:none;border-bottom:1px solid var(--line)}
+  .study a:hover{color:var(--amber);border-color:var(--amber)}
+  .disclaimer{margin-top:24px;font-size:13px;color:var(--muted);max-width:760px;font-family:var(--font-mono);line-height:1.7;letter-spacing:.01em}
+
+  .switch-note{margin-top:64px;padding-top:32px;border-top:1px solid var(--line-soft);text-align:center}
+  .switch-note p{font-family:var(--font-mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:18px}
+  .switch-btn{display:inline-flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:700;text-transform:uppercase;font-size:14px;letter-spacing:.04em;color:var(--cream);background:none;border:1px solid var(--line);border-radius:100px;padding:14px 26px;cursor:pointer;transition:all .3s;font-family:var(--font-display)}
+  .switch-btn:hover{border-color:var(--amber);color:var(--amber)}
+
+  /* footer */
+  footer{position:relative;z-index:10;border-top:1px solid var(--line-soft);margin-top:90px;padding:48px clamp(20px,5vw,48px);text-align:center}
+  footer .brand{font-size:18px;margin-bottom:12px;display:block}
+  footer .f-line{font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);line-height:2}
+  footer a{color:var(--gray);text-decoration:none}
+  footer a:hover{color:var(--amber)}
+
+  .reveal{opacity:0;transform:translateY(24px);transition:opacity .7s,transform .7s}
+  .reveal.in{opacity:1;transform:translateY(0)}
+</style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+<div class="vignette"></div>
+<div class="grain"></div>
+
+<nav>
+  <div class="brand">SHOCK<b>·</b>COFFEE</div>
+  <div class="nav-status"><span class="dot"></span> Nuevas variedades · 2026</div>
+</nav>
+
+<!-- ===================== PRESENTACIÓN ===================== -->
+<section class="hero">
+  <div class="wrap">
+    <div class="eyebrow">El café creado para hacer</div>
+    <h1 class="hero-title">EL SHOCK<br><span class="ln2">AHORA HACE</span><br>DOS COSAS MÁS</h1>
+    <div class="hero-copy">
+      <p class="lead">SHOCK siempre fue un café para HACER: 300&nbsp;mg de cafeína, energía limpia, sin el bajón de las 2 de la tarde. Eso no cambió.</p>
+      <p>Lo que cambió es que ahora hay dos versiones que le suman algo más. No es polvo mágico ni humo: son aminoácidos y compuestos que tu cuerpo y tu cerebro ya usan todos los días, puestos en la dosis que dicen los estudios.</p>
+      <p>La cafeína enciende. Estos la apuntan.</p>
+      <p class="impact">Una apunta al cuerpo.<br>La otra, a la cabeza.</p>
+      <p>Mismo café de siempre. Mismo tostado. Ahora con la química bien puesta para lo que vengas a hacer hoy.</p>
+    </div>
+
+    <div class="choose">
+      <div class="choose-q">¿Qué venís a hacer?</div>
+      <div class="btns">
+        <button class="cta" data-target="entreno">
+          <span class="cta-arrow">→</span>
+          <span class="cta-label">Quiero entrenar mejor</span>
+          <span class="cta-sub">Pre Entreno · Fuerza · Aguante</span>
+        </button>
+        <button class="cta" data-target="concentracion">
+          <span class="cta-arrow">→</span>
+          <span class="cta-label">Quiero trabajar mejor</span>
+          <span class="cta-sub">Concentración · Foco · Claridad</span>
+        </button>
+      </div>
+      <p class="micro" style="margin-top:18px">Elegí una y se despliega la info completa ↓</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== PRODUCTOS ===================== -->
+<div id="product-stage">
+  <div class="sec-divider"></div>
+
+  <!-- ===== PRE ENTRENO ===== -->
+  <section class="product" id="entreno">
+    <div class="wrap">
+      <div class="p-head">
+        <div class="p-tag">01 · El cuerpo</div>
+        <h2 class="p-title">SHOCK<br>PRE ENTRENO</h2>
+        <p class="p-claim">El primer café diseñado para aumentar tu <b>fuerza, resistencia y foco</b> al entrenar. Hecho por alguien que ama la idea de un pre-entreno pero siempre se decepcionó al tomarlos.</p>
+      </div>
+
+      <div class="block">
+        <div class="block-k"><span class="num">→</span> Qué es y qué tiene adentro</div>
+        <p>Es el SHOCK de siempre, pero formulado para ayudarte a entrenar mejor. Empecemos por lo que ya sabíamos: <b>la cafeína es el ingrediente pre-entreno con más respaldo del mundo</b>. No es solo energía. Antagoniza la adenosina y, a nivel muscular, aumenta la fuerza, baja la fatiga percibida y estira el aguante. Décadas de estudios.</p>
+        <p>El resto de la fórmula está para potenciar eso y cubrir los flancos que la cafeína no toca.</p>
+        <div class="formula">
+          <div class="formula-row head"><div>Compuesto</div><div>Por porción</div><div class="chem" style="text-align:right">Fórmula</div></div>
+          <div class="formula-row"><div class="cmp">Cafeína</div><div class="dose">300 mg</div><div class="chem">C₈H₁₀N₄O₂</div></div>
+          <div class="formula-row"><div class="cmp">Betaína (trimetilglicina)</div><div class="dose">1,5 g</div><div class="chem">C₅H₁₁NO₂</div></div>
+          <div class="formula-row"><div class="cmp">Taurina</div><div class="dose">1 g</div><div class="chem">C₂H₇NO₃S</div></div>
+          <div class="formula-row"><div class="cmp">Teacrina</div><div class="dose">200 mg</div><div class="chem">C₉H₁₂N₄O₃</div></div>
+          <div class="formula-row"><div class="cmp">Sodio</div><div class="dose">230 mg</div><div class="chem">Na⁺</div></div>
+          <div class="formula-row"><div class="cmp">Potasio</div><div class="dose">150 mg</div><div class="chem">K⁺</div></div>
+          <div class="formula-row"><div class="cmp">Magnesio</div><div class="dose">50 mg</div><div class="chem">Mg²⁺</div></div>
+        </div>
+      </div>
+
+      <div class="block">
+        <div class="block-k"><span class="num">→</span> Qué hace cada ingrediente</div>
+        <div class="ing-grid">
+          <div class="ing">
+            <div class="ing-top"><span class="ing-name">Betaína</span><span class="ing-dose">1,5 g</span></div>
+            <p>Trimetilglicina: viene de la remolacha. Funciona como osmolito —regula el agua dentro de la célula muscular— y como donante de grupos metilo. Es el ingrediente de la fuerza: los estudios la asocian a más potencia y a sostener más repeticiones y carga en los movimientos pesados.</p>
+            <span class="role">Fuerza · Potencia</span>
+          </div>
+          <div class="ing">
+            <div class="ing-top"><span class="ing-name">Taurina</span><span class="ing-dose">1 g</span></div>
+            <p>Aminoácido que el músculo usa para manejar el calcio y el estrés oxidativo. En criollo: aguante. Pelea la fatiga, ayuda a mantener la potencia cuando el músculo ya está cansado y baja los calambres.</p>
+            <span class="role">Resistencia · Anti-fatiga</span>
+          </div>
+          <div class="ing">
+            <div class="ing-top"><span class="ing-name">Teacrina</span><span class="ing-dose">200 mg</span></div>
+            <p>Es un multiplicador. No reemplaza a la cafeína, la potencia: juntas se amplifican y el envión rinde más, dura más y se siente más limpio, sin tolerancia ni bajón. Un ingrediente que quizá no escuchaste, pero que podés googlear. No se usa por su precio, no por falta de evidencia.</p>
+            <span class="role">Energía sostenida</span>
+          </div>
+          <div class="ing">
+            <div class="ing-top"><span class="ing-name">Electrolitos</span><span class="ing-dose">Na · K · Mg</span></div>
+            <p>Lo que largás transpirando. Conducen el impulso nervioso y la contracción muscular: te mantienen hidratado, cortan los calambres y sostienen el rendimiento cuando el entrenamiento aprieta. El sodio, de paso, le corta el amargor al café.</p>
+            <span class="role">Hidratación · Neuromuscular</span>
+          </div>
+          <div class="ing">
+            <div class="ing-top"><span class="ing-name">Cafeína</span><span class="ing-dose">300 mg</span></div>
+            <p>El motor, igual que en SHOCK clásico. Más fuerza, menos fatiga percibida y foco para entrenar, con liberación gradual: 6 a 8 horas, sin el crash de los pre-entrenos sintéticos.</p>
+            <span class="role">El motor</span>
+          </div>
+        </div>
+        <div class="logic">La cafeína enciende <span>·</span> la betaína empuja <span>·</span> la taurina aguanta <span>·</span> los electrolitos te sostienen.</div>
+      </div>
+
+      <div class="block">
+        <div class="block-k"><span class="num">→</span> Lo que tenés que saber</div>
+        <div class="faq">
+          <div class="faq-item"><div class="faq-q"><span class="q-mark">?</span> ¿Qué voy a sentir?</div><div class="faq-a">Energía pareja, sin temblores ni taquicardia. La cafeína junto a la teacrina te dan una energía que pocas veces sentiste. La betaína y la taurina mejoran tu resistencia y tu fuerza. Los electrolitos te mantienen entero hasta la última serie. Fierros, crossfit, running o bici —da igual—.</div></div>
+          <div class="faq-item"><div class="faq-q"><span class="q-mark">?</span> ¿Cuándo lo tomo?</div><div class="faq-a">20 a 30 minutos antes de entrenar. El pico de cafeína llega a los 45–60 minutos y se sostiene por horas, así no se te cae justo cuando estás levantando. Una taza camino al gym y listo.</div></div>
+          <div class="faq-item"><div class="faq-q"><span class="q-mark">?</span> ¿Me cambia el gusto del café?</div><div class="faq-a">Muy poco. La taurina es prácticamente neutra, la betaína deja apenas un dejo dulzón, y el sodio resalta las notas chocolatosas del café.</div></div>
+          <div class="faq-item"><div class="faq-q"><span class="q-mark">?</span> ¿Cómo meten todo eso en un café?</div><div class="faq-a">No es polvo tirado por arriba que se separa y te deja la dosis a la suerte. Los compuestos van micronizados —partícula a escala de micrones, más superficie, se disuelven enteros y sin arenilla— e integrados de forma homogénea en el molido. Preparalo por inmersión (prensa francesa) y aprovechás todo.</div></div>
+        </div>
+      </div>
+
+      <div class="block">
+        <div class="block-k"><span class="num">→</span> ¿Esto está probado?</div>
+        <p>No es marketing. Es fisiología del ejercicio. Cada compuesto está en la fórmula porque hay literatura científica que lo respalda.</p>
+        <div class="studies">
+          <div class="study">
+            <div class="s-top"><span class="s-comp">Cafeína</span><span class="s-dose">ergogénico Nº1</span></div>
+            <div class="s-finding">El suplemento deportivo con más respaldo que existe: revisiones tipo «umbrella» confirman mejoras en fuerza, potencia y resistencia muscular.</div>
+            <div class="s-cite">Grgic et al. «Wake up and smell the coffee: caffeine supplementation and exercise performance» — <a href="https://pubmed.ncbi.nlm.nih.gov/?term=caffeine+exercise+performance+umbrella+review" target="_blank" rel="noopener">Br J Sports Med (2020) · PubMed</a></div>
+          </div>
+          <div class="study">
+            <div class="s-top"><span class="s-comp">Betaína</span><span class="s-dose">2,5 g/día en estudios</span></div>
+            <div class="s-finding">Ensayos en el Journal of the International Society of Sports Nutrition asocian la suplementación con mejoras en potencia y capacidad de fuerza en hombres entrenados.</div>
+            <div class="s-cite">Lee et al. «Ergogenic effects of betaine supplementation on strength and power performance» — <a href="https://jissn.biomedcentral.com/articles/10.1186/1550-2783-7-27" target="_blank" rel="noopener">JISSN 2010;7:27</a></div>
+          </div>
+          <div class="study">
+            <div class="s-top"><span class="s-comp">Taurina</span><span class="s-dose">1–3 g/día</span></div>
+            <div class="s-finding">La revisión «Taurine in sports and exercise» la respalda para resistencia, tiempo hasta el agotamiento y reducción de la fatiga, con dosis efectivas de 1 a 3 g.</div>
+            <div class="s-cite">Kurtz et al. «Taurine in sports and exercise» — <a href="https://jissn.biomedcentral.com/articles/10.1186/s12970-021-00438-0" target="_blank" rel="noopener">JISSN 2021;18:39</a></div>
+          </div>
+          <div class="study">
+            <div class="s-top"><span class="s-comp">Teacrina</span><span class="s-dose">200–300 mg</span></div>
+            <div class="s-finding">Estudiada a 200–300 mg/día durante 8 semanas: energía y foco sostenidos, sinergia con la cafeína y sin desarrollo de tolerancia ni habituación.</div>
+            <div class="s-cite">Taylor et al. «Safety of TeaCrine, a non-habituating purine alkaloid» — <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4711067/" target="_blank" rel="noopener">JISSN 2016;13:2</a></div>
+          </div>
+          <div class="study">
+            <div class="s-top"><span class="s-comp">Electrolitos</span><span class="s-dose">Na · K · Mg</span></div>
+            <div class="s-finding">Sodio, potasio y magnesio sostienen la hidratación y la función neuromuscular, y reducen el riesgo de calambres por sudoración durante el ejercicio intenso.</div>
+            <div class="s-cite">Consenso de fisiología del ejercicio e hidratación — <a href="https://pubmed.ncbi.nlm.nih.gov/?term=electrolytes+exercise+hydration+neuromuscular+cramps" target="_blank" rel="noopener">PubMed</a></div>
+          </div>
+        </div>
+        <p class="disclaimer">Nota honesta: la dosis de betaína de los estudios suele ser 2,5 g; SHOCK usa 1,5 g combinada con el resto de la fórmula. Si querés calcular tu cafeína según tu peso, está en calculadora.theshockcoffee.com. Embarazo, problemas de corazón, presión alta o medicación: hablalo con tu médico. No apto para menores de 18.</p>
+      </div>
+
+      <div class="switch-note">
+        <p>¿Y si lo que querés es rendir con la cabeza?</p>
+        <button class="switch-btn" data-target="concentracion">Ver SHOCK Concentración →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CONCENTRACIÓN ===== -->
+  <section class="product" id="concentracion">
+    <div class="wrap">
+      <div class="p-head">
+        <div class="p-tag">02 · La cabeza</div>
+        <h2 class="p-title">SHOCK<br>CONCENTRACIÓN</h2>
+        <p class="p-claim">El único café diseñado para aumentar tu <b>concentración y tu fuerza de voluntad</b>. Creado por químicos, no por hipsters.</p>
+      </div>
+
+      <div class="block">
+        <div class="block-k"><span class="num">→</span> Qué es y qué lo diferencia del clásico</div>
+        <p>Es el SHOCK de siempre (café con 3 veces más cafeína) con tres compuestos sumados para una sola cosa: <b>concentración</b>. La cafeína bloquea los receptores de adenosina —la molécula de la somnolencia— y dispara más alerta, más velocidad de procesamiento y mejor memoria de trabajo.</p>
+        <p>El problema es que la cafeína sola tiene un techo. Un techo que bajo estrés se alcanza más rápido y que no se rompe con más cafeína. Ahí entran <b>la L-teanina, la tirosina y la colina</b>: tres compuestos que toman las mejoras de la cafeína y las potencian, para estar más concentrado, por más horas, aún bajo estrés.</p>
+        <div class="formula">
+          <div class="formula-row head"><div>Compuesto</div><div>Por porción</div><div class="chem" style="text-align:right">Fórmula</div></div>
+          <div class="formula-row"><div class="cmp">Cafeína</div><div class="dose">300 mg</div><div class="chem">C₈H₁₀N₄O₂</div></div>
+          <div class="formula-row"><div class="cmp">L-Teanina</div><div class="dose">200 mg</div><div class="chem">C₇H₁₄N₂O₃</div></div>
+          <div class="formula-row"><div class="cmp">Citicolina (CDP-colina)</div><div class="dose">300 mg</div><div class="chem">C₁₄H₂₆N₄O₁₁P₂</div></div>
+          <div class="formula-row"><div class="cmp">L-Tirosina</div><div class="dose">500 mg</div><div class="chem">C₉H₁₁NO₃</div></div>
+        </div>
+      </div>
+
+      <div class="block">
+        <div class="block-k"><span class="num">→</span> Qué hace cada ingrediente</div>
+        <div class="ing-grid">
+          <div class="ing">
+            <div class="ing-top"><span class="ing-name">L-Teanina</span><span class="ing-dose">200 mg</span></div>
+            <p>Un aminoácido del té verde que cruza la barrera hematoencefálica y aumenta las ondas alfa, el patrón cerebral de la calma alerta. En criollo: estabiliza la cafeína. Es la dupla cognitiva con más respaldo que existe —cafeína + teanina— y el efecto medido es atención sostenida con menos divagación mental.</p>
+            <span class="role">Calma alerta · Atención</span>
+          </div>
+          <div class="ing">
+            <div class="ing-top"><span class="ing-name">Citicolina</span><span class="ing-dose">300 mg</span></div>
+            <p>Precursor de acetilcolina y de fosfatidilcolina (la membrana de tus neuronas). Sube la acetilcolina, el neurotransmisor de la memoria y el aprendizaje, y ayuda a la energía en el lóbulo frontal. Es la que sostiene la concentración en tareas largas. Elegimos citicolina porque es estable, no absorbe humedad y rinde a dosis baja.</p>
+            <span class="role">Memoria · Aguante mental</span>
+          </div>
+          <div class="ing">
+            <div class="ing-top"><span class="ing-name">L-Tirosina</span><span class="ing-dose">500 mg</span></div>
+            <p>Precursor de dopamina y noradrenalina —los químicos del foco y la motivación—. Bajo presión, estrés o pocas horas de sueño, tu cerebro consume esos neurotransmisores más rápido de lo que los repone. La tirosina llena el tanque. Cuando más exigís la cabeza, es la que no te deja caer.</p>
+            <span class="role">Foco bajo presión</span>
+          </div>
+          <div class="ing">
+            <div class="ing-top"><span class="ing-name">Cafeína</span><span class="ing-dose">300 mg</span></div>
+            <p>El motor, igual que en SHOCK clásico. Antagonista de la adenosina y activador de dopamina: reacción más rápida, foco más nítido, 6 a 8 horas sin el bajón de las 2 PM.</p>
+            <span class="role">El motor</span>
+          </div>
+        </div>
+        <div class="logic">La cafeína enciende <span>·</span> la teanina ordena <span>·</span> la citicolina sostiene <span>·</span> la tirosina aguanta.</div>
+      </div>
+
+      <div class="block">
+        <div class="block-k"><span class="num">→</span> Lo que tenés que saber</div>
+        <div class="faq">
+          <div class="faq-item"><div class="faq-q"><span class="q-mark">?</span> ¿Qué voy a sentir?</div><div class="faq-a">Claridad, no acelere. Entrás en zona más rápido, te dispersás menos y aguantás más antes de que la cabeza pida descanso. Para estudiar, programar, escribir o rendir un final sin agarrar el celular cada tres minutos. No te va a dar alas. Te va a dar foco.</div></div>
+          <div class="faq-item"><div class="faq-q"><span class="q-mark">?</span> ¿Cuándo lo tomo?</div><div class="faq-a">30 a 60 minutos antes del bloque de foco: el parcial, la jornada larga, la sesión de estudio. La cafeína y la tirosina pegan mejor justo antes de exigir la cabeza, no después.</div></div>
+          <div class="faq-item"><div class="faq-q"><span class="q-mark">?</span> ¿Me cambia el gusto del café?</div><div class="faq-a">Para nada. Es alrededor de 1 gramo de compuestos solubles sobre el café, y la teanina hasta aporta un dejo muy chiquito a umami/dulce que está muy bueno. Si esperabas que supiera a remedio, perdés.</div></div>
+          <div class="faq-item"><div class="faq-q"><span class="q-mark">?</span> ¿Cómo meten todo eso en un café?</div><div class="faq-a">No lo espolvoreamos arriba como sal —eso se separa y cada taza sale distinta—. Los compuestos van micronizados a escala de micrones, lo que multiplica la superficie expuesta al agua y los disuelve rápido y completos, integrados de forma homogénea en el molido.</div></div>
+        </div>
+      </div>
+
+      <div class="block">
+        <div class="block-k"><span class="num">→</span> ¿Esto está probado?</div>
+        <p>No es marketing. Es bioquímica. Cada compuesto entra en la fórmula porque hay ensayos en humanos que lo respaldan.</p>
+        <div class="studies">
+          <div class="study">
+            <div class="s-top"><span class="s-comp">Cafeína + L-Teanina</span><span class="s-dose">200 mg teanina</span></div>
+            <div class="s-finding">Decenas de ensayos en humanos sobre atención selectiva, velocidad de reacción y reducción de la divagación mental. La combinación supera a cada compuesto por separado.</div>
+            <div class="s-cite">Owen et al. (Nutr Neurosci 2008) · Br J Nutr 2025, adultos privados de sueño — <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12491391/" target="_blank" rel="noopener">PMC</a></div>
+          </div>
+          <div class="study">
+            <div class="s-top"><span class="s-comp">Citicolina</span><span class="s-dose">250–500 mg/día</span></div>
+            <div class="s-finding">Estudios con 250–500 mg/día muestran mejoras en atención y memoria en adultos sanos; el efecto es mayor con la dosis de 500 mg.</div>
+            <div class="s-cite">McGlade et al. (2012) · Nakazaki et al. «Citicoline and Memory Function» — <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8349115/" target="_blank" rel="noopener">J Nutr 2021 · PMC</a></div>
+          </div>
+          <div class="study">
+            <div class="s-top"><span class="s-comp">L-Tirosina</span><span class="s-dose">bajo estrés / fatiga</span></div>
+            <div class="s-finding">Las revisiones la respaldan para sostener el rendimiento cognitivo bajo estrés, fatiga o falta de sueño —su efecto es más claro justo cuando el sistema está exigido—.</div>
+            <div class="s-cite">Jongkees et al. «Tyrosine supplementation… under stress or cognitive demands — A review» — <a href="https://www.sciencedirect.com/science/article/abs/pii/S0022395615002472" target="_blank" rel="noopener">J Psychiatr Res 2015</a></div>
+          </div>
+        </div>
+        <p class="disclaimer">Si querés calcular tu cafeína según tu peso, tu costumbre y lo que dicen los estudios, metelo en calculadora.theshockcoffee.com. Advertencia honesta: embarazo, tiroides complicada, antidepresivos (IMAO) o cualquier medicación —hablalo antes con tu médico, la tirosina interactúa con algunos fármacos—. No apto para menores de 18.</p>
+      </div>
+
+      <div class="switch-note">
+        <p>¿Y si lo que querés es romperla entrenando?</p>
+        <button class="switch-btn" data-target="entreno">Ver SHOCK Pre Entreno →</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<footer>
+  <span class="brand">SHOCK<b style="color:var(--amber)">·</b>COFFEE</span>
+  <div class="f-line">Buenos Aires · Argentina</div>
+  <div class="f-line"><a href="https://theshockcoffee.com" target="_blank" rel="noopener">Tienda</a> · Granos AA · Tostado 72 h antes del envío · Testeado UBA</div>
+  <div class="f-line">Hecho en Argentina, para salir adelante.</div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* ============ Partículas 3D flotando ============ */
+(function(){
+  if(!window.THREE) return;
+  const canvas=document.getElementById('bg-canvas');
+  const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  renderer.setSize(window.innerWidth,window.innerHeight);
+  const scene=new THREE.Scene();
+  const camera=new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeight,0.1,100);
+  camera.position.z=14;
+
+  const COUNT=520;
+  const positions=new Float32Array(COUNT*3);
+  const speeds=new Float32Array(COUNT);
+  const sizes=new Float32Array(COUNT);
+  for(let i=0;i<COUNT;i++){
+    positions[i*3]  =(Math.random()-0.5)*40;
+    positions[i*3+1]=(Math.random()-0.5)*30;
+    positions[i*3+2]=(Math.random()-0.5)*22;
+    speeds[i]=0.004+Math.random()*0.012;
+    sizes[i]=0.6+Math.random()*1.7;
+  }
+  const geo=new THREE.BufferGeometry();
+  geo.setAttribute('position',new THREE.BufferAttribute(positions,3));
+  geo.setAttribute('aSize',new THREE.BufferAttribute(sizes,1));
+
+  // soft round sprite
+  const c=document.createElement('canvas');c.width=c.height=64;
+  const ctx=c.getContext('2d');
+  const g=ctx.createRadialGradient(32,32,0,32,32,32);
+  g.addColorStop(0,'rgba(242,239,233,0.95)');
+  g.addColorStop(0.35,'rgba(201,128,59,0.45)');
+  g.addColorStop(1,'rgba(201,128,59,0)');
+  ctx.fillStyle=g;ctx.fillRect(0,0,64,64);
+  const sprite=new THREE.CanvasTexture(c);
+
+  const mat=new THREE.PointsMaterial({
+    size:0.5, map:sprite, transparent:true,
+    depthWrite:false, blending:THREE.AdditiveBlending,
+    opacity:0.85, sizeAttenuation:true
+  });
+  const points=new THREE.Points(geo,mat);
+  scene.add(points);
+
+  let mx=0,my=0,tx=0,ty=0;
+  window.addEventListener('mousemove',e=>{
+    mx=(e.clientX/window.innerWidth-0.5);
+    my=(e.clientY/window.innerHeight-0.5);
+  });
+  let scrollY=0;
+  window.addEventListener('scroll',()=>{scrollY=window.scrollY;});
+
+  function animate(){
+    requestAnimationFrame(animate);
+    const pos=geo.attributes.position.array;
+    for(let i=0;i<COUNT;i++){
+      pos[i*3+1]+=speeds[i];           // float up
+      pos[i*3]+=Math.sin(Date.now()*0.0002+i)*0.002; // drift
+      if(pos[i*3+1]>16){pos[i*3+1]=-16;}
+    }
+    geo.attributes.position.needsUpdate=true;
+    tx+=(mx-tx)*0.04; ty+=(my-ty)*0.04;
+    points.rotation.y=tx*0.5;
+    points.rotation.x=ty*0.3;
+    camera.position.y=-scrollY*0.0015;
+    points.rotation.z+=0.0004;
+    renderer.render(scene,camera);
+  }
+  animate();
+
+  window.addEventListener('resize',()=>{
+    camera.aspect=window.innerWidth/window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth,window.innerHeight);
+  });
+})();
+
+/* ============ Botones / despliegue de productos ============ */
+(function(){
+  const stage=document.getElementById('product-stage');
+  const products={entreno:document.getElementById('entreno'),concentracion:document.getElementById('concentracion')};
+  const ctas=document.querySelectorAll('.cta');
+
+  function open(target){
+    // toggle CTA active state
+    ctas.forEach(b=>b.classList.toggle('active',b.dataset.target===target));
+    // show product
+    stage.classList.add('open');
+    Object.keys(products).forEach(k=>products[k].classList.toggle('show',k===target));
+    // re-trigger reveal animations
+    setTimeout(()=>{
+      observeReveals();
+      const el=products[target];
+      const y=el.getBoundingClientRect().top+window.scrollY-70;
+      window.scrollTo({top:y,behavior:'smooth'});
+    },60);
+  }
+
+  document.querySelectorAll('[data-target]').forEach(btn=>{
+    btn.addEventListener('click',()=>open(btn.dataset.target));
+  });
+
+  /* reveal on scroll */
+  let io;
+  function observeReveals(){
+    document.querySelectorAll('.product.show .block, .product.show .p-head').forEach(el=>{
+      if(!el.classList.contains('reveal')){el.classList.add('reveal');}
+    });
+    if(io) io.disconnect();
+    io=new IntersectionObserver(entries=>{
+      entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in');});
+    },{threshold:0.12});
+    document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+  }
+  window.observeReveals=observeReveals;
+})();
+</script>
+</body>
+</html>
